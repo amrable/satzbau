@@ -4,26 +4,28 @@ import { SectionLabel } from "./SectionLabel";
 export function Corrections({ items }: { items: Correction[] }) {
   if (items.length === 0) return null;
   return (
-    <section aria-labelledby="sec-corrections" className="mt-10">
+    <section aria-labelledby="sec-corrections">
       <SectionLabel>
         <span id="sec-corrections">Korrekturen</span>
       </SectionLabel>
-      <ul className="divide-y divide-slate-200 border-t border-b border-slate-200">
-        {items.map((c, i) => (
-          <li key={i} className="py-2">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-slate-500 line-through text-[15px]">
-                {c.original}
-              </span>
-              <span className="text-slate-400 text-sm">→</span>
-              <span className="text-slate-900 font-medium text-[15px]">
-                {c.suggested}
-              </span>
-            </div>
-            <div className="text-sm text-slate-500 mt-0.5">{c.reason}</div>
-          </li>
-        ))}
-      </ul>
+      <div className="rounded-xl border border-amber-200 bg-amber-50/60 shadow-sm overflow-hidden">
+        <ul className="divide-y divide-amber-100">
+          {items.map((c, i) => (
+            <li key={i} className="px-4 py-3">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-slate-500 line-through text-[15px]">
+                  {c.original}
+                </span>
+                <span className="text-amber-700/70 text-sm">→</span>
+                <span className="text-slate-900 font-medium text-[15px]">
+                  {c.suggested}
+                </span>
+              </div>
+              <div className="text-sm text-slate-600 mt-0.5">{c.reason}</div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

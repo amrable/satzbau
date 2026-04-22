@@ -22,6 +22,14 @@ const EXAMPLE_ANALYSIS: Analysis = {
       formInSentence: "hat ... gebracht",
       partizipII: "gebracht",
       auxiliary: "haben",
+      present: {
+        ich: "bringe",
+        du: "bringst",
+        erSieEs: "bringt",
+        wir: "bringen",
+        ihr: "bringt",
+        sie: "bringen",
+      },
     },
   ],
   breakdown: [
@@ -76,46 +84,79 @@ export default function App() {
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {count !== null && (
-        <div className="fixed top-4 right-4 text-xs text-slate-500 z-10">
-          translated {count.toLocaleString()} sentence{count === 1 ? "" : "s"}
-        </div>
-      )}
+    <div className="min-h-screen">
+      <div className="fixed top-4 right-4 z-10 flex items-center gap-4 text-xs text-slate-500">
+        {count !== null && (
+          <span>
+            translated {count.toLocaleString()} sentence
+            {count === 1 ? "" : "s"}
+          </span>
+        )}
+        <a
+          href="/about"
+          className="hover:text-slate-900 underline-offset-2 hover:underline"
+        >
+          About
+        </a>
+        <iframe
+          src="https://ghbtns.com/github-btn.html?user=amrable&repo=nicht&type=star&count=true"
+          frameBorder="0"
+          scrolling="0"
+          width="110"
+          height="20"
+          title="Star amrable/nicht on GitHub"
+          className="block"
+        />
+      </div>
       <main
         lang="de"
-        className="mx-auto px-6 sm:px-8 pb-12"
+        className="mx-auto px-6 sm:px-8 pb-12 w-full"
         style={{
-          maxWidth: 640,
+          maxWidth: 1100,
           paddingTop: "clamp(40px, 5vw, 80px)",
         }}
       >
-        <h1 className="text-xl font-medium text-slate-900 leading-snug">
-          German Sentence Analyzer
-        </h1>
+        <div className="mx-auto" style={{ maxWidth: 640 }}>
+          <h1 className="text-xl font-medium text-slate-900 leading-snug">
+            German Sentence Analyzer
+          </h1>
 
-        <div className="mt-8">
-          {error && (
-            <ErrorBanner message={error} onDismiss={() => setError(null)} />
-          )}
-          <SentenceInput
-            value={sentence}
-            onChange={setSentence}
-            onSubmit={onAnalyze}
-            disabled={loading}
-            loading={loading}
-          />
+          <div className="mt-8">
+            {error && (
+              <ErrorBanner message={error} onDismiss={() => setError(null)} />
+            )}
+            <SentenceInput
+              value={sentence}
+              onChange={setSentence}
+              onSubmit={onAnalyze}
+              disabled={loading}
+              loading={loading}
+            />
+            <p className="mt-3 text-xs text-slate-500">
+              Uses AI — results may be inaccurate. Double-check when it matters.
+            </p>
+          </div>
         </div>
 
-        <div aria-live="polite" className="mt-12">
-          {loading && <LoadingSkeleton />}
+        <div aria-live="polite" className="mt-10">
+          {loading && (
+            <div className="mx-auto" style={{ maxWidth: 640 }}>
+              <LoadingSkeleton />
+            </div>
+          )}
           {!loading && data && (
-            <>
-              <Corrections items={data.corrections} />
-              <NounsTable nouns={data.nouns} />
-              <VerbsTable verbs={data.verbs} />
-              <Breakdown items={data.breakdown} />
-            </>
+            <div className="flex flex-col gap-8">
+              {data.corrections.length > 0 && (
+                <div className="mx-auto w-full" style={{ maxWidth: 640 }}>
+                  <Corrections items={data.corrections} />
+                </div>
+              )}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <NounsTable nouns={data.nouns} />
+                <VerbsTable verbs={data.verbs} />
+                <Breakdown items={data.breakdown} />
+              </div>
+            </div>
           )}
         </div>
       </main>

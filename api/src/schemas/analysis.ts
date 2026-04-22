@@ -15,6 +15,14 @@ export const Verb = z.object({
   formInSentence: z.string(),
   partizipII: z.string(),
   auxiliary: z.enum(["haben", "sein"]),
+  present: z.object({
+    ich: z.string(),
+    du: z.string(),
+    erSieEs: z.string(),
+    wir: z.string(),
+    ihr: z.string(),
+    sie: z.string(),
+  }),
 });
 
 export const BreakdownItem = z.object({

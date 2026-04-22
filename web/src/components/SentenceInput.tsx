@@ -25,7 +25,7 @@ export function SentenceInput({ value, onChange, onSubmit, disabled, loading }: 
       </label>
       <textarea
         id="sentence"
-        className="textarea focus-ring w-full text-[15px] text-slate-900 bg-white border border-slate-200 rounded-lg resize-y"
+        className="textarea focus-ring w-full text-[15px] text-slate-900 bg-white border border-slate-200 rounded-xl resize-y shadow-sm transition-shadow"
         rows={3}
         maxLength={500}
         placeholder="Deutschen Satz hier einfügen…"
@@ -33,7 +33,7 @@ export function SentenceInput({ value, onChange, onSubmit, disabled, loading }: 
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         disabled={disabled}
-        style={{ padding: "12px 14px", lineHeight: 1.5 }}
+        style={{ padding: "14px 16px", lineHeight: 1.55 }}
       />
       <div className="flex items-center justify-between gap-3 mt-3">
         <div className="text-xs text-slate-400 min-h-[16px]">

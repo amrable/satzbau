@@ -9,6 +9,14 @@ export type Verb = {
   formInSentence: string;
   partizipII: string;
   auxiliary: "haben" | "sein";
+  present: {
+    ich: string;
+    du: string;
+    erSieEs: string;
+    wir: string;
+    ihr: string;
+    sie: string;
+  };
 };
 
 export type BreakdownItem = {
