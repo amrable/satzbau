@@ -1,53 +1,56 @@
 export function LoadingSkeleton() {
+  const bar = (w: number | string, h = 14) => (
+    <div
+      className="animate-pulse"
+      style={{
+        height: h,
+        width: w,
+        background: "var(--border)",
+        borderRadius: 4,
+      }}
+    />
+  );
+
+  const card = (rows = 3) => (
+    <div
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-card)",
+        overflow: "hidden",
+      }}
+    >
+      {Array.from({ length: rows }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            padding: "14px 16px",
+            borderTop: i === 0 ? "none" : "1px solid var(--hairline)",
+            display: "flex",
+            gap: 12,
+            alignItems: "center",
+          }}
+        >
+          {bar(36, 18)}
+          {bar(140, 14)}
+          <div style={{ flex: 1 }} />
+          {bar(80, 14)}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div aria-hidden="true">
-      <div className="mt-7">
-        <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-2.5 w-16 mb-4" />
-        <div className="border-t border-slate-200 dark:border-slate-700" />
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="flex items-center gap-4 py-3.5 border-b border-slate-200 dark:border-slate-700"
-          >
-            <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4 w-9" />
-            <div
-              className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4"
-              style={{ width: 90 + i * 20 }}
-            />
-            <div className="flex-1" />
-            <div
-              className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-3.5"
-              style={{ width: 60 + i * 20 }}
-            />
-          </div>
-        ))}
+      <div style={{ marginTop: 28 }}>
+        {bar(60, 10)}
+        <div style={{ height: 10 }} />
+        {card()}
       </div>
-
-      <div className="mt-10">
-        <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-2.5 w-16 mb-4" />
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 p-4">
-          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-5 w-32 mb-3.5" />
-          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-3.5 w-56 mb-2.5" />
-          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-3.5 w-40 mb-2.5" />
-          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4 w-12" />
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-2.5 w-16 mb-4" />
-        <div className="border-t border-slate-200 dark:border-slate-700" />
-        {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="flex justify-between py-3 border-b border-slate-200 dark:border-slate-700"
-          >
-            <div
-              className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4"
-              style={{ width: `${30 + (i * 8) % 40}%` }}
-            />
-            <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-3.5 w-28" />
-          </div>
-        ))}
+      <div style={{ marginTop: 28 }}>
+        {bar(60, 10)}
+        <div style={{ height: 10 }} />
+        {card()}
       </div>
     </div>
   );

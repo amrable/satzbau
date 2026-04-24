@@ -8,27 +8,68 @@ export function Corrections({ items }: { items: Correction[] }) {
       <SectionLabel>
         <span id="sec-corrections">Korrekturen</span>
       </SectionLabel>
-      <div className="rounded-xl border border-amber-200 bg-amber-50/60 shadow-sm overflow-hidden dark:border-amber-900/60 dark:bg-amber-950/30">
-        <ul className="divide-y divide-amber-100 dark:divide-amber-900/40">
-          {items.map((c, i) => (
-            <li key={i} className="px-4 py-3">
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-slate-500 dark:text-slate-500 line-through text-[15px]">
-                  {c.original}
-                </span>
-                <span className="text-amber-700/70 dark:text-amber-300/70 text-sm">
-                  →
-                </span>
-                <span className="text-slate-900 dark:text-slate-100 font-medium text-[15px]">
-                  {c.suggested}
-                </span>
-              </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+      <div
+        style={{
+          background: "var(--warn-bg)",
+          border: "1px solid var(--warn-border)",
+          borderRadius: "var(--radius-card)",
+          padding: "14px 16px",
+        }}
+      >
+        {items.map((c, i) => (
+          <div
+            key={i}
+            style={{
+              paddingTop: i === 0 ? 0 : 12,
+              paddingBottom: i === items.length - 1 ? 0 : 12,
+              borderBottom:
+                i === items.length - 1 ? "none" : "1px solid var(--warn-border)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  textDecoration: "line-through",
+                  textDecorationColor: "#DC2626",
+                  textDecorationThickness: 2,
+                  color: "var(--warn-text)",
+                  fontSize: 14.5,
+                  fontWeight: 500,
+                }}
+              >
+                {c.original}
+              </span>
+              <span style={{ color: "var(--text-faint)", fontSize: 13 }}>→</span>
+              <span
+                style={{
+                  fontSize: 14.5,
+                  fontWeight: 600,
+                  color: "var(--text)",
+                }}
+              >
+                {c.suggested}
+              </span>
+            </div>
+            {c.reason && (
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "var(--text-muted)",
+                  marginTop: 3,
+                }}
+              >
                 {c.reason}
               </div>
-            </li>
-          ))}
-        </ul>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );

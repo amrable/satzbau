@@ -4,15 +4,38 @@ export function ErrorBanner({ message, onDismiss }: Props) {
   return (
     <div
       role="alert"
-      className="rounded-lg flex items-start gap-3 bg-red-50 border border-red-200 text-red-800 mb-4 dark:bg-red-950/40 dark:border-red-900 dark:text-red-200"
-      style={{ padding: "10px 14px" }}
+      style={{
+        background: "var(--error-bg)",
+        border: "1px solid var(--error-border)",
+        color: "var(--error-text)",
+        padding: "10px 14px",
+        borderRadius: "var(--radius-card)",
+        marginBottom: 16,
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+      }}
     >
-      <span className="text-sm font-medium flex-1 leading-snug">{message}</span>
+      <span
+        style={{ fontSize: 14, fontWeight: 500, flex: 1, lineHeight: 1.5 }}
+      >
+        {message}
+      </span>
       <button
         type="button"
         onClick={onDismiss}
         aria-label="Fehlermeldung schließen"
-        className="focus-ring text-red-800 dark:text-red-200 text-base leading-none p-0.5 rounded"
+        className="focus-ring"
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "var(--error-text)",
+          cursor: "pointer",
+          fontSize: 16,
+          lineHeight: 1,
+          padding: 2,
+          borderRadius: 4,
+        }}
       >
         ×
       </button>

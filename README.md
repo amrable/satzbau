@@ -1,4 +1,4 @@
-# nicht.wtf — German Sentence Analyzer
+# satzbau.eu — German Sentence Analyzer
 
 A minimal web app: paste a German sentence, get a structured grammatical analysis (nouns with articles + plurals, verbs with Partizip II + auxiliary, breakdown by grammatical role).
 

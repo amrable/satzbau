@@ -1,16 +1,23 @@
-const CLASSES = {
-  der: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
-  die: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
-  das: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
+const STYLES = {
+  der: { background: "var(--der-bg)", color: "var(--der-fg)" },
+  die: { background: "var(--die-bg)", color: "var(--die-fg)" },
+  das: { background: "var(--das-bg)", color: "var(--das-fg)" },
 } as const;
 
-type Article = keyof typeof CLASSES;
+type Article = keyof typeof STYLES;
 
 export function ArticlePill({ article }: { article: Article }) {
   return (
     <span
-      className={`${CLASSES[article]} text-xs font-semibold rounded-md`}
-      style={{ padding: "2px 8px", lineHeight: 1.4 }}
+      style={{
+        display: "inline-block",
+        padding: "2px 8px",
+        borderRadius: "var(--radius-pill)",
+        fontSize: 12,
+        fontWeight: 600,
+        lineHeight: 1.5,
+        ...STYLES[article],
+      }}
     >
       {article}
     </span>

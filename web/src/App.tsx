@@ -6,11 +6,32 @@ import { Breakdown } from "./components/Breakdown";
 import { Corrections } from "./components/Corrections";
 import { LoadingSkeleton } from "./components/LoadingSkeleton";
 import { ErrorBanner } from "./components/ErrorBanner";
-import { analyzeSentence, fetchStats, messageForError } from "./lib/api";
+import Header from "./components/Header";
+import { analyzeSentence, fetchSharedAnalysis, fetchStats, messageForError, shareAnalysis } from "./lib/api";
 import type { Analysis } from "./lib/types";
 
 const EXAMPLE_SENTENCE = "Der Mann hat das Buch in die Bibliothek gebracht.";
+
+const FAQ = [
+  {
+    q: "Can it tell me if a noun is der, die, or das?",
+    a: "Yes. For each noun in your sentence, Satzbau shows the correct definite article and the plural form.",
+  },
+  {
+    q: "Does it identify German cases (accusative, dative, etc.)?",
+    a: "Yes. The breakdown labels each phrase with its grammatical role — Subjekt (nominative), Akkusativobjekt, Dativobjekt, Genitiv, and adverbials.",
+  },
+  {
+    q: "Will it catch mistakes in my own sentences?",
+    a: "If you submit a sentence with a likely error — wrong case ending, wrong article, wrong verb form — Satzbau flags the probable mistake and shows the corrected form.",
+  },
+  {
+    q: "Is it accurate?",
+    a: "Satzbau uses a large language model, so results can occasionally be wrong. Use it as a study aid and double-check anything that matters with a dictionary or a teacher.",
+  },
+];
 const EXAMPLE_ANALYSIS: Analysis = {
+  analyzed: EXAMPLE_SENTENCE,
   translation: "The man brought the book to the library.",
   nouns: [
     { word: "Mann", article: "der", plural: "die Männer", english: "man" },
@@ -66,6 +87,9 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
   const refreshCount = () => {
     fetchStats()
@@ -74,6 +98,20 @@ export default function App() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("shared");
+    if (id) {
+      setLoading(true);
+      fetchSharedAnalysis(id)
+        .then((result) => {
+          setData(result);
+          setSentence(result.sentence || "");
+        })
+        .catch(() => {
+          setError("Shared analysis not found.");
+        })
+        .finally(() => setLoading(false));
+    }
     refreshCount();
   }, []);
 
@@ -94,6 +132,69 @@ export default function App() {
     }
   };
 
+  const copyToClipboard = async (text: string) => {
+    // Modern API
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // fall through to legacy
+      }
+    }
+    // Legacy fallback (works without fresh user gesture in most browsers)
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "absolute";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      document.body.removeChild(ta);
+      return false;
+    }
+  };
+
+  const onShare = async () => {
+    if (!data || sharing) return;
+    if (data.id) {
+      const url = `${window.location.origin}?shared=${data.id}`;
+      const ok = await copyToClipboard(url);
+      if (ok) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }
+      return;
+    }
+    const ok = window.confirm(
+      "Sharing creates a public link to this sentence and its analysis. Anyone with the link can view it. Continue?",
+    );
+    if (!ok) return;
+    setSharing(true);
+    try {
+      const { id } = await shareAnalysis(sentence.trim(), data);
+      setData({ ...data, id });
+      const url = `${window.location.origin}?shared=${id}`;
+      const copied = await copyToClipboard(url);
+      if (copied) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      } else {
+        setShareUrl(url);
+        setTimeout(() => setShareUrl(null), 8000);
+      }
+    } catch (err) {
+      setError(messageForError(err));
+    } finally {
+      setSharing(false);
+    }
+  };
+
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape" && error) setError(null);
@@ -104,45 +205,58 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <div className="fixed top-4 right-4 z-10 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-        {count !== null && (
-          <span>
-            translated {count.toLocaleString()} sentence
-            {count === 1 ? "" : "s"}
-          </span>
-        )}
-        <a
-          href="/about"
-          className="hover:text-slate-900 dark:hover:text-slate-100 underline-offset-2 hover:underline"
-        >
-          About
-        </a>
-        {/* <iframe
-          src="https://ghbtns.com/github-btn.html?user=amrable&repo=nicht&type=star&count=true"
-          frameBorder="0"
-          scrolling="0"
-          width="110"
-          height="20"
-          title="Star amrable/nicht on GitHub"
-          className="block"
-        /> */}
-      </div>
+      <Header count={count} />
       <main
         lang="de"
-        className="mx-auto px-6 sm:px-8 pb-12 w-full"
+        className="mx-auto px-6 sm:px-8 pb-16 w-full"
         style={{
           maxWidth: 1100,
-          paddingTop: "clamp(40px, 5vw, 80px)",
+          paddingTop: "clamp(20px, 4vw, 36px)",
         }}
       >
         <div className="mx-auto" style={{ maxWidth: 640 }}>
-          <h1 className="text-xl font-medium text-slate-900 dark:text-slate-100 leading-snug">
-            German Sentence Analyzer
+          <h1
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: "-0.01em",
+              color: "var(--text)",
+              margin: 0,
+              lineHeight: 1.3,
+            }}
+          >
+            Satzbau{" "}
+            <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>
+              — German Sentence Analyzer
+            </span>
           </h1>
 
-          <div className="mt-8">
+          <div style={{ marginTop: 20 }}>
             {error && (
               <ErrorBanner message={error} onDismiss={() => setError(null)} />
+            )}
+            {shareUrl && (
+              <div
+                style={{
+                  background: "var(--warn-bg)",
+                  border: "1px solid var(--warn-border)",
+                  color: "var(--warn-text)",
+                  padding: "10px 14px",
+                  borderRadius: "var(--radius-card)",
+                  marginBottom: 16,
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  wordBreak: "break-all",
+                }}
+              >
+                <strong>Shared!</strong> Copy this link:{" "}
+                <a
+                  href={shareUrl}
+                  style={{ color: "inherit", textDecoration: "underline" }}
+                >
+                  {shareUrl}
+                </a>
+              </div>
             )}
             <SentenceInput
               value={sentence}
@@ -150,22 +264,15 @@ export default function App() {
               onSubmit={onAnalyze}
               disabled={loading}
               loading={loading}
+              onShare={onShare}
+              showShare={!!data && !loading}
+              copied={copied}
+              sharing={sharing}
             />
-            {!loading && data?.translation && (
-              <p
-                lang="en"
-                className="mt-3 text-sm text-slate-500 dark:text-slate-400 italic leading-snug"
-              >
-                {data.translation}
-              </p>
-            )}
-            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-              Uses AI — results may be inaccurate. Double-check when it matters.
-            </p>
           </div>
         </div>
 
-        <div aria-live="polite" className="mt-10">
+        <div aria-live="polite" className="mt-8">
           {loading && (
             <div className="mx-auto" style={{ maxWidth: 640 }}>
               <LoadingSkeleton />
@@ -180,7 +287,11 @@ export default function App() {
               )}
               {data.breakdown.length > 0 && (
                 <div className="mx-auto w-full" style={{ maxWidth: 640 }}>
-                  <Breakdown items={data.breakdown} />
+                  <Breakdown
+                    items={data.breakdown}
+                    sentence={data.analyzed || data.sentence}
+                    translation={data.translation}
+                  />
                 </div>
               )}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -190,6 +301,95 @@ export default function App() {
             </div>
           )}
         </div>
+
+        <section
+          lang="en"
+          className="mx-auto"
+          style={{
+            maxWidth: 640,
+            marginTop: 72,
+            fontSize: 14,
+            color: "var(--text-muted)",
+            lineHeight: 1.6,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: "var(--text)",
+              margin: 0,
+            }}
+          >
+            What Satzbau does
+          </h2>
+          <p style={{ marginTop: 8 }}>
+            Satzbau is a free German sentence analyzer for learners. Paste a
+            sentence and you'll see every noun with its article (der, die, or das)
+            and plural form; every verb with its Partizip II and auxiliary (haben
+            or sein); and a role-by-role breakdown that labels the Subjekt,
+            Akkusativobjekt, Dativobjekt, and adverbials. It also flags likely
+            mistakes in your own writing.
+          </p>
+
+          <h2
+            style={{
+              marginTop: 32,
+              fontSize: 15,
+              fontWeight: 600,
+              color: "var(--text)",
+            }}
+          >
+            German grammar guides
+          </h2>
+          <ul
+            style={{
+              marginTop: 8,
+              paddingLeft: 20,
+              listStyle: "disc",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
+            <li><a className="underline underline-offset-2" href="/guides/der-die-das">How to know der, die, or das</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/accusative-vs-dative">Accusative vs dative in German</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/german-cases">The four German cases explained</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/partizip-2">Partizip II: how to form it + list</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/haben-or-sein">Haben or sein as auxiliary?</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/german-plurals">German plural rules</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/german-word-order">German word order (Satzbau)</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/modal-verbs">German modal verbs</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/strong-verbs">Strong & irregular verbs</a></li>
+            <li><a className="underline underline-offset-2" href="/guides/two-way-prepositions">Two-way prepositions (Wechselpräpositionen)</a></li>
+          </ul>
+
+          <h2
+            style={{
+              marginTop: 32,
+              fontSize: 15,
+              fontWeight: 600,
+              color: "var(--text)",
+            }}
+          >
+            FAQ
+          </h2>
+          <dl
+            style={{
+              marginTop: 8,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            {FAQ.map((q) => (
+              <div key={q.q}>
+                <dt style={{ fontWeight: 500, color: "var(--text)" }}>{q.q}</dt>
+                <dd style={{ marginTop: 4 }}>{q.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </main>
     </div>
   );

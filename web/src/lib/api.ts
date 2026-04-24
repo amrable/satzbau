@@ -23,6 +23,40 @@ export async function analyzeSentence(sentence: string): Promise<Analysis> {
   return res.json();
 }
 
+export async function shareAnalysis(
+  sentence: string,
+  analysis: Analysis,
+): Promise<{ id: string }> {
+  const { id: _id, sentence: _s, ...rest } = analysis;
+  let res: Response;
+  try {
+    res = await fetch(`${import.meta.env.VITE_API_URL}/api/share`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sentence, analysis: rest }),
+    });
+  } catch {
+    throw new ApiError(0, "network");
+  }
+  if (!res.ok) {
+    throw new ApiError(res.status, String(res.status));
+  }
+  return res.json();
+}
+
+export async function fetchSharedAnalysis(id: string): Promise<Analysis> {
+  let res: Response;
+  try {
+    res = await fetch(`${import.meta.env.VITE_API_URL}/api/shared/${id}`);
+  } catch {
+    throw new ApiError(0, "network");
+  }
+  if (!res.ok) {
+    throw new ApiError(res.status, String(res.status));
+  }
+  return res.json();
+}
+
 export async function fetchStats(): Promise<{ count: number }> {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/api/stats`);
   if (!res.ok) throw new ApiError(res.status, String(res.status));

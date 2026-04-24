@@ -50,11 +50,12 @@ export const Correction = z.object({
 });
 
 export const AnalysisResponse = z.object({
-  translation: z.string().default(""),
-  nouns: z.array(Noun),
-  verbs: z.array(Verb),
-  breakdown: z.array(BreakdownItem),
-  corrections: z.array(Correction),
+  analyzed: z.union([z.string(), z.null()]).transform((v) => v ?? "").default(""),
+  translation: z.union([z.string(), z.null()]).transform((v) => v ?? ""),
+  nouns: z.array(Noun).default([]),
+  verbs: z.array(Verb).default([]),
+  breakdown: z.array(BreakdownItem).default([]),
+  corrections: z.array(Correction).default([]),
 });
 
 export type Analysis = z.infer<typeof AnalysisResponse>;

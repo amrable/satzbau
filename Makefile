@@ -1,11 +1,11 @@
-.PHONY: help install install-api install-web dev dev-api dev-web build build-api build-web typecheck clean env deploy deploy-api deploy-web logs-api
+.PHONY: help install install-api install-web dev dev-api dev-web build build-api build-web typecheck clean env deploy deploy-api deploy-web logs-api db-rows db-rows-remote
 
 # --- Deployment config ---
 SSH_KEY   ?= $(HOME)/.ssh/id_ed25519_hetzner
 SSH_HOST  ?= root@89.167.12.249
 REMOTE    ?= /srv/nicht/app
 CF_PROJECT?= nicht-wtf
-API_URL   ?= https://api.nicht.wtf
+API_URL   ?= https://api.satzbau.eu
 
 help:
 	@echo "Targets:"
@@ -101,3 +101,18 @@ deploy-web:
 
 logs-api:
 	ssh -i $(SSH_KEY) $(SSH_HOST) 'journalctl -u nicht-api -f -n 500'
+
+# --- DB inspection ---
+# Show latest N rows of the analyses table. Override N and DB path:
+#   make db-rows N=50
+#   make db-rows-remote N=20
+N       ?= 20
+DB      ?= api/data/analyses.db
+REMOTE_DB ?= $(REMOTE)/data/analyses.db
+
+db-rows:
+	@sqlite3 -header -column $(DB) \
+		"SELECT id, datetime(created_at, 'unixepoch', 'localtime') AS created, substr(sentence, 1, 80) AS sentence FROM analyses ORDER BY created_at DESC LIMIT $(N);"
+
+db-rows-remote:
+	@ssh -i $(SSH_KEY) $(SSH_HOST) "sqlite3 -header -column $(REMOTE_DB) \"SELECT id, datetime(created_at, 'unixepoch', 'localtime') AS created, substr(sentence, 1, 80) AS sentence FROM analyses ORDER BY created_at DESC LIMIT $(N);\""

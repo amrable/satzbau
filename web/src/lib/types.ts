@@ -42,6 +42,9 @@ export type Correction = {
 };
 
 export type Analysis = {
+  id?: string;
+  sentence?: string;
+  analyzed?: string;
   translation: string;
   nouns: Noun[];
   verbs: Verb[];
