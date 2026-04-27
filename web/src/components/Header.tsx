@@ -22,10 +22,10 @@ export default function Header({ count }: HeaderProps) {
       }}
     >
       {count !== null && count !== undefined && (
-        // <span>
-        //   translated {count.toLocaleString()} sentence
-        //   {count === 1 ? "" : "s"}
-        // </span>
+        <span>
+          {/* translated {count.toLocaleString()} sentence
+          {count === 1 ? "" : "s"} */}
+        </span>
       )}
       <a href="/" style={{ color: "var(--text)", textDecoration: "none" }}>
         Home
